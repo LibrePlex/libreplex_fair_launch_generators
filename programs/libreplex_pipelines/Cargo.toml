@@ -1,0 +1,38 @@
+[package]
+name = "libreplex_pipelines"
+version = "0.0.0"
+description = "Created with Anchor"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/LibrePlex/metadata"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "libreplex_pipelines"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+
+[dependencies]
+anchor-lang = {version = "~0.30", features = ["init-if-needed"]}
+anchor-spl = {version = "~0.30"}
+libreplex_fair_launch = {version="0.5.0", features =["cpi", "no-entrypoint"]}
+spl-associated-token-account = "3.0.2"
+solana-program = {version = "~1.18"}
+mpl-token-metadata = { version="~3" }
+libreplex_shared = {version= "0.3.0", features=["no-entrypoint"] }
+libreplex_liquidity = {version = "*", path="../libreplex_liquidity", features =["cpi", "no-entrypoint"]}
+libreplex_monoswap_deprecated = {version = "0.0.0", features =["cpi", "no-entrypoint"]}
+spl-token-metadata-interface = {version= "~0.3"}
+spl-pod = {version= "~0.2"}
+
+[dev-dependencies]
+mocha = "0.1.1"
+assert_matches = "1.5.0"
+solana-program-test = "~1.18"
+solana-sdk = "~1.18"

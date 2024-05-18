@@ -1,0 +1,35 @@
+[package]
+name = "libreplex_liquidity"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/Libreplex/libreplex-program-library"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "libreplex_liquidity"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build", "libreplex_fair_launch/idl-build"]
+
+[dependencies]
+anchor-lang = {version = "~0.30", features = ["init-if-needed"]}
+anchor-spl = {version = "~0.30"}
+libreplex_fair_launch = {version="0.5.0", features =["cpi", "no-entrypoint", "idl-build"]}
+libreplex_shared = {version= "0.3.0", features=["no-entrypoint"] }
+mpl-token-metadata = { version="~3" }
+libreplex_inscriptions = {version = "0.5.1", features=["cpi"]}
+amm-proxy = {path = "../../utils/mercurial-proxy", features = ["cpi"]}
+vault-proxy = {path = "../../utils/vault-proxy", features = ["cpi"]}
+solana-program = "~1.18"
+solana-address-lookup-table-program = "^1.18"
+dyn-fmt = "0.3.0"
+
+[dev-dependencies]
+solana-program-test = {version= "~1.18"}

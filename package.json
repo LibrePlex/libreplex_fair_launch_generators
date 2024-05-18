@@ -1,0 +1,36 @@
+{
+  "sideEffects": false,
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build-interfaces": "cd packages/libreplex-idls && yarn package && yarn build && cd .. && cd libreplex-sdk && yarn build && cd ../..",
+    "build": "lerna run clean && lerna run build",
+    "libre-cli": "ts-node src/cli/index.ts",
+    "libreplex_nifty_hybrid:deploy:devnet": "anchor deploy -p libreplex_nifty_hybrid --provider.cluster https://api.devnet.solana.com --provider.wallet ~/.config/solana/libreplex-deployer.json",
+    "libreplex_pipelines:deploy:devnet": "anchor deploy -p libreplex_pipelines --provider.cluster https://api.devnet.solana.com --provider.wallet ~/.config/solana/libreplex-deployer.json",
+    "libreplex_pipelines:deploy:mainnet": "anchor deploy -p libreplex_pipelines --provider.cluster https://api.mainnet-beta.solana.com --provider.wallet ~/.config/solana/libreplex-deployer.json",
+    "libreplex_liquidity:deploy:devnet": "anchor deploy -p libreplex_liquidity --provider.cluster https://api.devnet.solana.com --provider.wallet ~/.config/solana/libreplex-deployer.json",
+    "libreplex_liquidity:deploy:mainnet": "anchor build -p libreplex_liquidity&& anchor deploy -p libreplex_liquidity --provider.cluster https://api.mainnet-beta.solana.com --provider.wallet ~/.config/solana/libreplex-deployer.json",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "0.30.0",
+    "@solana/spl-token": "^0.3.8",
+    "@solana/web3.js": "^1.73.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.5",
+    "@types/mocha": "^9.0.0",
+    "@types/node": "20.2.3",
+    "@types/react": "18.2.7",
+    "chai": "^4.3.7",
+    "js-sha256": "0.9.0",
+    "lefthook": "^1.4.9",
+    "lerna": "^7.1.5",
+    "mocha": "^9.0.3",
+    "ts-mocha": "^10.0.0",
+    "typescript": "5.0.4"
+  }
+}
