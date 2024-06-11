@@ -158,7 +158,6 @@ pub fn join_handler<'info>(ctx: Context<'_, '_, '_, 'info, JoinCtx<'info>>, inpu
         libreplex_fair_launch::cpi::join(CpiContext::new_with_signer(
             fair_launch.to_account_info(),
             libreplex_fair_launch::cpi::accounts::JoinCtx {
-                non_fungible_token_account_owner: liquidity.to_account_info(),
                 deployment: ctx.accounts.deployment.to_account_info(),
                 deployment_config: ctx.accounts.deployment_config.to_account_info(),
                 creator_fee_treasury: ctx.accounts.creator_fee_treasury.to_account_info(),
@@ -166,14 +165,7 @@ pub fn join_handler<'info>(ctx: Context<'_, '_, '_, 'info, JoinCtx<'info>>, inpu
                 hashlist_marker: ctx.accounts.pooled_hashlist_market.to_account_info(),
                 payer: ctx.accounts.payer.to_account_info(),
                 signer: liquidity.to_account_info(),
-                fungible_mint: ctx.accounts.fungible_mint.to_account_info(),
                 non_fungible_mint: ctx.accounts.pooled_non_fungible_mint.to_account_info(),
-                non_fungible_token_account: ctx
-                    .accounts
-                    .pooled_non_fungible_token_account
-                    .to_account_info(),
-                token_program: ctx.accounts.token_program_22.to_account_info(),
-                associated_token_program: ctx.accounts.associated_token_program.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
             },
             &[seeds],
@@ -230,7 +222,6 @@ pub fn join_handler<'info>(ctx: Context<'_, '_, '_, 'info, JoinCtx<'info>>, inpu
     libreplex_fair_launch::cpi::join(CpiContext::new_with_signer(
         fair_launch.to_account_info(),
         libreplex_fair_launch::cpi::accounts::JoinCtx {
-            non_fungible_token_account_owner: ctx.accounts.receiver.to_account_info(),
             deployment: ctx.accounts.deployment.to_account_info(),
             deployment_config: ctx.accounts.deployment_config.to_account_info(),
             creator_fee_treasury: ctx.accounts.creator_fee_treasury.to_account_info(),
@@ -238,11 +229,7 @@ pub fn join_handler<'info>(ctx: Context<'_, '_, '_, 'info, JoinCtx<'info>>, inpu
             hashlist_marker: ctx.accounts.hashlist_marker.to_account_info(),
             payer: ctx.accounts.payer.to_account_info(),
             signer: liquidity.to_account_info(),
-            fungible_mint: ctx.accounts.fungible_mint.to_account_info(),
             non_fungible_mint: ctx.accounts.non_fungible_mint.to_account_info(),
-            non_fungible_token_account: ctx.accounts.non_fungible_token_account.to_account_info(),
-            token_program: ctx.accounts.token_program_22.to_account_info(),
-            associated_token_program: ctx.accounts.associated_token_program.to_account_info(),
             system_program: ctx.accounts.system_program.to_account_info(),
         },
         &[seeds],

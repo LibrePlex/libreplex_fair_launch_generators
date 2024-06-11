@@ -6,6 +6,8 @@ skip-lint = false
 libreplex_liquidity="LiquGRWGrp8JKspo8zDDu6qpRmX1p6U3PX2USqiE1eg"
 libreplex_pipelines="Pipe6YuqZmoHeKTpwETFaZEiALNREGfZqCjMbk9P4UG"
 libreplex_nifty_hybrid="N1FTSwV4sLvYzPK1wxkeTV88ycD9m6vUoSVV34wkf7c"
+libreplex_mx="METANohMwuVeNCJBhWDu4biTd74YAKyEruWdPUF1TDe"
+
 
 [registry]
 url = "https://api.apr.dev"

@@ -102,7 +102,7 @@ pub struct MintSplCtx<'info> {
     pub sysvar_instructions: UncheckedAccount<'info>,
 }
 
-pub fn mint_spl_handler<'info>(ctx: Context<'_, '_, '_, 'info, MintSplCtx<'info>>) -> Result<()> {
+pub fn mint_spl_handler<'info>(ctx: Context<'_, '_, 'info, 'info, MintSplCtx<'info>>) -> Result<()> {
     let fair_launch = &ctx.accounts.fair_launch;
 
     let liquidity = &mut ctx.accounts.liquidity;
