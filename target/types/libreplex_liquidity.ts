@@ -1578,6 +1578,23 @@ export type LibreplexLiquidity = {
           {
             "name": "offchainUrl",
             "type": "string"
+          },
+          {
+            "name": "disableSwapCosigner",
+            "docs": [
+              "when cosigner is active this can be toggled to disable swap cosigner",
+              "while still requiring cosigner for other actions such as join"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "padding",
+            "type": {
+              "array": [
+                "u8",
+                199
+              ]
+            }
           }
         ]
       }

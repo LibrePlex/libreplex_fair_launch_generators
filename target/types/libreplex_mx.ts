@@ -32,11 +32,6 @@ export type LibreplexMx = {
           "writable": true
         },
         {
-          "name": "groupMint",
-          "writable": true,
-          "signer": true
-        },
-        {
           "name": "payer",
           "writable": true,
           "signer": true
@@ -83,7 +78,8 @@ export type LibreplexMx = {
           "address": "11111111111111111111111111111111"
         },
         {
-          "name": "mplTokenProgram"
+          "name": "fairLaunch",
+          "address": "8bvPnYE5Pvz2Z9dE6RAqWr1rzLknTndZ9hwvRE6kPDXP"
         }
       ],
       "args": [
@@ -98,16 +94,16 @@ export type LibreplexMx = {
       ]
     },
     {
-      "name": "mint",
+      "name": "join",
       "discriminator": [
-        51,
-        57,
-        225,
-        47,
-        182,
-        146,
-        137,
-        166
+        206,
+        55,
+        2,
+        106,
+        113,
+        220,
+        17,
+        163
       ],
       "accounts": [
         {
@@ -144,8 +140,7 @@ export type LibreplexMx = {
         },
         {
           "name": "nonFungibleMint",
-          "writable": true,
-          "signer": true
+          "writable": true
         },
         {
           "name": "nonFungibleMetadata",
@@ -204,8 +199,7 @@ export type LibreplexMx = {
               },
               {
                 "kind": "account",
-                "path": "deployment.fungible_mint",
-                "account": "deployment"
+                "path": "nonFungibleMint"
               }
             ],
             "program": {
