@@ -6,9 +6,7 @@ use anchor_lang::{system_program, InstructionData, ToAccountMetas};
 use anchor_spl::associated_token::{self, get_associated_token_address_with_program_id};
 
 use anchor_spl::token::spl_token;
-use libreplex_fair_launch::{
-    MultiplierLimits, TOKEN2022_DEPLOYMENT_TYPE,
-};
+use libreplex_fair_launch::{MultiplierLimits, TOKEN2022_DEPLOYMENT_TYPE};
 use libreplex_shared::operations::auth_rules_program;
 use libreplex_shared::sysvar_instructions_program;
 use solana_program::hash::Hash;
@@ -22,15 +20,12 @@ use crate::constants::AUTH_RULES;
 use crate::state::Pnft;
 use crate::{CREATOR_FEE_IN_LAMPORTS, DECIMALS, LIMIT_PER_MINT, MAX_NUMBER_OF_TOKENS, TICKER};
 
-
 pub async fn swap_to_fungible_2022(
-    banks_client: &mut BanksClient,
+    context: &mut ProgramTestContext,
     ticker: &str,
     non_fungible_mint: &Pnft,
     minter_wallet: Option<&Keypair>,
     fungible_mint: Pubkey,
-    payer: Pubkey,
-    last_blockhash: Hash,
 ) -> Result<Pubkey> {
     let mut signing_keypairs: Vec<&Keypair> = vec![];
 
@@ -39,7 +34,10 @@ pub async fn swap_to_fungible_2022(
             signing_keypairs.push(x);
             x.pubkey()
         }
-        _ => payer,
+        _ => {
+            signing_keypairs.push(&context.payer);
+            context.payer.pubkey()
+        }
     };
 
     let deployment = Pubkey::find_program_address(
@@ -59,9 +57,8 @@ pub async fn swap_to_fungible_2022(
     .0;
 
     let non_fungible_source_token_account = non_fungible_mint.token_account;
-  
-    let token_record_source = non_fungible_mint.token_record;
 
+    let token_record_source = non_fungible_mint.token_record;
 
     let non_fungible_target_token_account = get_associated_token_address_with_program_id(
         &deployment.key(),
@@ -182,7 +179,8 @@ pub async fn swap_to_fungible_2022(
     println!("{:?}", additional_accounts);
     accounts.append(&mut additional_accounts);
 
-    banks_client
+    context
+        .banks_client
         .process_transaction(Transaction::new_signed_with_payer(
             &[Instruction {
                 program_id: libreplex_fair_launch::id(),
@@ -191,7 +189,7 @@ pub async fn swap_to_fungible_2022(
             }],
             Some(&minter_wallet_key),
             &signing_keypairs,
-            last_blockhash,
+            context.last_blockhash,
         ))
         .await
         .unwrap();
@@ -200,13 +198,11 @@ pub async fn swap_to_fungible_2022(
 }
 
 pub async fn swap_to_non_fungible_2022(
-    banks_client: &mut BanksClient,
+    context: &mut ProgramTestContext,
     ticker: &str,
     non_fungible_mint: &Pnft,
     minter_wallet: Option<&Keypair>,
     fungible_mint: Pubkey,
-    payer: Pubkey,
-    last_blockhash: Hash,
 ) -> Result<()> {
     let mut signing_keypairs: Vec<&Keypair> = vec![];
 
@@ -215,7 +211,10 @@ pub async fn swap_to_non_fungible_2022(
             signing_keypairs.push(x);
             x.pubkey()
         }
-        _ => payer,
+        _ => {
+            signing_keypairs.push(&context.payer);
+            context.payer.pubkey()
+        }
     };
 
     let deployment = Pubkey::find_program_address(
@@ -367,7 +366,8 @@ pub async fn swap_to_non_fungible_2022(
 
     accounts.append(&mut additional_accounts);
 
-    banks_client
+    context
+        .banks_client
         .process_transaction(Transaction::new_signed_with_payer(
             &[Instruction {
                 program_id: libreplex_fair_launch::id(),
@@ -376,15 +376,13 @@ pub async fn swap_to_non_fungible_2022(
             }],
             Some(&minter_wallet_key),
             &signing_keypairs,
-            last_blockhash,
+            context.last_blockhash,
         ))
         .await
         .unwrap();
 
     Ok(())
 }
-
-
 
 pub async fn initialise_deployment(
     context: &mut ProgramTestContext,
@@ -456,3 +454,15 @@ pub async fn initialise_deployment(
     Ok((deployment, deployment_config, creator_fee_treasury))
 }
 
+pub async fn refresh_blockhash_and_warp(context: &mut ProgramTestContext, slot: &mut u64) -> Hash {
+    // context.warp_to_slot(*slot).unwrap();
+    context.warp_forward_force_reward_interval_end().unwrap();
+    context.warp_to_epoch(*slot).unwrap();
+    *slot += 1;
+
+    context
+        .banks_client
+        .get_new_latest_blockhash(&context.last_blockhash)
+        .await
+        .unwrap()
+}

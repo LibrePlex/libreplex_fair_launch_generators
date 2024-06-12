@@ -13,28 +13,39 @@ use solana_program_test::*;
 
 use solana_sdk::{signature::Keypair, signer::Signer};
 use spl_token_2022::extension::StateWithExtensions;
-use utilities::Pnft;
+use utilities::{mint_pnft};
 
 
-mod mx_joiner_creator_filter_tests {
+pub async fn refresh_blockhash_and_warp(context: &mut ProgramTestContext, slot: &mut u64) -> Hash {
+    // context.warp_to_slot(*slot).unwrap();
+    context.warp_forward_force_reward_interval_end().unwrap();
+    context.warp_to_epoch(*slot).unwrap();
+    *slot += 1;
+
+    let last_blockhash = context
+        .banks_client
+        .get_new_latest_blockhash(&context.last_blockhash)
+        .await
+        .unwrap();
+    return last_blockhash;
+}
+
+mod mx_joiner_collection_filter_tests {
 
     use anchor_lang::prelude::Account;
     use libreplex_fair_launch::{Deployment, TOKEN2022_DEPLOYMENT_TYPE};
 
-    use libreplex_mx::FILTER_TYPE_CREATOR;
+    use libreplex_mx::FILTER_TYPE_COLLECTION;
     use solana_program::account_info::AccountInfo;
     use solana_program::pubkey::Pubkey;
-
     use solana_sdk::transaction::TransactionError;
     use spl_token_2022::processor::Processor;
-    use utilities::{
-        initialise_deployment, initialise_mx_joiner, join_to_fair_launch, mint_pnft, refresh_blockhash_and_warp, swap_to_fungible_2022, swap_to_non_fungible_2022, DECIMALS, INITIAL_ESCROW_TOKENS, LIMIT_PER_MINT, TICKER
-    };
+    use utilities::{initialise_deployment, initialise_mx_joiner, join_to_fair_launch, swap_to_fungible_2022, swap_to_non_fungible_2022, CollectionInput, Pnft, DECIMALS, INITIAL_ESCROW_TOKENS, LIMIT_PER_MINT, TICKER};
 
     use super::*;
 
     #[tokio::test]
-    async fn mx_joiner_creator_filter_test() {
+    async fn mx_joiner_collection_filter_test() {
         let mut program = ProgramTest::new(
             "libreplex_mx",
             ::libreplex_mx::ID,
@@ -120,13 +131,32 @@ mod mx_joiner_creator_filter_tests {
         assert_eq!(deployment_account_obj.limit_per_mint, LIMIT_PER_MINT);
 
         refresh_blockhash_and_warp(&mut context, &mut slot).await;
+
+        let collection_mint = mint_pnft(
+            &mut context,
+            &royalty_creator,
+            false,
+            None,
+        )
+        .await;
+
+        let collection_mint_2= mint_pnft(
+            &mut context,
+            &royalty_creator,
+            false,
+            None,
+        )
+        .await;
+
+
+
         let (fungible_mint, _fungible_mint_escrow, metaplex_joiner) = initialise_mx_joiner(
             &mut context,
-            royalty_creator.pubkey(),
-            FILTER_TYPE_CREATOR,
+            collection_mint.mint,
+            FILTER_TYPE_COLLECTION,
             &deployment_account_obj,
             metaplex_joiner,
-            libreplex_mx_joiner_seed
+            libreplex_mx_joiner_seed,
         )
         .await
         .unwrap();
@@ -159,9 +189,10 @@ mod mx_joiner_creator_filter_tests {
 
         assert_eq!(fungible_mint_account_obj.decimals, DECIMALS);
 
-     
+        let banks_client = &mut context.banks_client;
+
         check_deployment_account_state(
-            &mut context,
+            banks_client,
             deployment,
             fungible_mint,
             deployment_account_obj.creator,
@@ -171,23 +202,23 @@ mod mx_joiner_creator_filter_tests {
         )
         .await;
 
-        refresh_blockhash_and_warp(&mut context, &mut slot).await;
-
         let mut non_fungible_mints: Vec<Pnft> = vec![];
 
-        let mint_1 = mint_pnft(
+        let pnft_mint = mint_pnft(
             &mut context,
             &royalty_creator,
-            true,
-            None,
+            false,
+            Some(CollectionInput {
+                key: collection_mint.mint,
+                verify: true,
+            }),
         )
         .await;
-
-        // add a good pnft with the correct creator
+        // add a good pnft with the correct collection
         let banks_client_error = join_to_fair_launch(
             &mut context,
             &deployment_account_obj.ticker,
-            &mint_1,
+            &pnft_mint,
             creator_fee_treasury,
             metaplex_joiner,
         )
@@ -196,19 +227,34 @@ mod mx_joiner_creator_filter_tests {
         assert_eq!(banks_client_error.is_none(), true);
 
         let bad_creator = Keypair::new();
-        // add a bad pnft with an incorrect creator
-        let mint_2 = mint_pnft(
+
+        let bad_creator_mint = mint_pnft(
             &mut context,
             &bad_creator,
-            true,
-            None,
+            false,
+            Some(CollectionInput {
+                key: collection_mint.mint,
+                verify: false,
+            }),
+        )
+        .await;
+        // add an pnft with an incorrect collection
+
+        let pnft_mint_2 = mint_pnft(
+            &mut context,
+            &royalty_creator,
+            false,
+            Some(CollectionInput {
+                key: collection_mint_2.mint,
+                verify: true,
+            }),
         )
         .await;
 
         let banks_client_error = join_to_fair_launch(
             &mut context,
             &deployment_account_obj.ticker,
-            &mint_2,
+            &pnft_mint_2,
             creator_fee_treasury,
             metaplex_joiner,
         )
@@ -220,7 +266,7 @@ mod mx_joiner_creator_filter_tests {
                     TransactionError::InstructionError(_, instruction_error) => {
                         assert_eq!(
                             instruction_error.to_string(),
-                            "custom program error: 0x1770"
+                            "custom program error: 0x1773"
                         );
                     }
                     _ => {
@@ -232,24 +278,26 @@ mod mx_joiner_creator_filter_tests {
                 }
             },
             _ => {
-                panic!("Bad creator joined successfully. This should not happen.")
+                panic!("Mint with bad collection joined successfully. This should not happen.")
             }
         }
 
         let mint_3 = mint_pnft(
             &mut context,
-            &royalty_creator,
+            &bad_creator,
             false,
-            None,
+            Some(CollectionInput {
+                key: collection_mint.mint,
+                verify: false,
+            }),
         )
         .await;
-
         let banks_client_error = join_to_fair_launch(
             &mut context,
             &deployment_account_obj.ticker,
             &mint_3,
             creator_fee_treasury,
-            metaplex_joiner
+            metaplex_joiner,
         )
         .await;
 
@@ -259,7 +307,7 @@ mod mx_joiner_creator_filter_tests {
                     TransactionError::InstructionError(_, instruction_error) => {
                         assert_eq!(
                             instruction_error.to_string(),
-                            "custom program error: 0x1771"
+                            "custom program error: 0x1772"
                         );
                     }
                     _ => {
@@ -271,87 +319,21 @@ mod mx_joiner_creator_filter_tests {
                 }
             },
             _ => {
-                panic!("Unverified creator joined successfully. This should not happen.")
+                panic!("Mint with unverified collection successfully. This should not happen.")
             }
         }
 
-        non_fungible_mints.push(mint_1);
-
-        check_deployment_account_state(
-            &mut context,
-            deployment,
-            fungible_mint,
-            metaplex_joiner,
-            0,
-            1,
-            DECIMALS,
-        )
-        .await;
-
-        // // see if we can swap
-        let minter_fungible_token_account = swap_to_fungible_2022(
-            &mut context,
-            &deployment_account_obj.ticker,
-            &non_fungible_mints[0],
-            None,
-            fungible_mint
-        )
-        .await
-        .unwrap();
-
-        // assert_eq!(banks_client_error.is_none(), true);
-
-        check_deployment_account_state(
-            &mut context,
-            deployment,
-            fungible_mint,
-            metaplex_joiner,
-            1,
-            1,
-            DECIMALS,
-        )
-        .await;
-
-        check_token_account_state(
-            &mut context,
-            minter_fungible_token_account,
-            fungible_mint,
-            minter_wallet,
-            deployment_account_obj.limit_per_mint
-                * (10_u64.pow(deployment_account_obj.decimals as u32)),
-        )
-        .await;
-
-        // // see if we can swap back
-        swap_to_non_fungible_2022(
-            &mut context,
-            &deployment_account_obj.ticker,
-            &non_fungible_mints[0],
-            None,
-            fungible_mint
-        )
-        .await
-        .unwrap();
-
-        // check_token_account_state(
-        //     &mut context,
-        //     minter_fungible_token_account,
-        //     fungible_mint,
-        //     minter_wallet,
-        //     0,
-        // )
-        // .await;
     }
 }
 
 pub async fn check_token_account_state(
-    context: &mut ProgramTestContext,
+    banks_client: &mut BanksClient,
     token_account: Pubkey,
     expected_mint: Pubkey,
     expected_owner: Pubkey,
     expected_amount: u64,
 ) {
-    let mut token_account_data = context.banks_client
+    let mut token_account_data = banks_client
         .get_account(token_account)
         .await
         .unwrap()
@@ -380,7 +362,7 @@ pub async fn check_token_account_state(
 }
 
 pub async fn check_deployment_account_state(
-    context: &mut ProgramTestContext,
+    banks_client: &mut BanksClient,
     deployment: Pubkey,
     expected_fungible_mint: Pubkey,
     expected_creator: Pubkey,
@@ -388,7 +370,7 @@ pub async fn check_deployment_account_state(
     expected_tokens_issued: u64,
     expected_decimals: u8,
 ) {
-    let mut deployment_account = context.banks_client.get_account(deployment).await.unwrap().unwrap();
+    let mut deployment_account = banks_client.get_account(deployment).await.unwrap().unwrap();
 
     let deployment_account_info = AccountInfo::new(
         &deployment,

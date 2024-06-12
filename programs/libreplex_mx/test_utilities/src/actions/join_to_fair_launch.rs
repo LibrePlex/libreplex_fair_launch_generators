@@ -4,22 +4,20 @@ use anchor_lang::prelude::*;
 
 use anchor_lang::{system_program, InstructionData, ToAccountMetas};
 
-use solana_program::hash::Hash;
+
 use solana_program::{instruction::Instruction, pubkey::Pubkey};
 use solana_program_test::*;
 
-use solana_sdk::{signature::Keypair, signer::Signer, transaction::Transaction};
+use solana_sdk::{signer::Signer, transaction::Transaction};
 
 use crate::state::Pnft;
 
 
 pub async fn join_to_fair_launch(
-    banks_client: &mut BanksClient,
+    context: &mut ProgramTestContext,
     ticker: &str,
     pnft_mint: &Pnft,
     creator_fee_treasury: Pubkey,
-    context_payer: &Keypair,
-    recent_blockhash: Hash,
     metaplex_joiner: Pubkey,
 ) -> Option<BanksClientError> {
     let deployment = Pubkey::find_program_address(
@@ -64,7 +62,7 @@ pub async fn join_to_fair_launch(
         deployment,
         deployment_config,
         creator_fee_treasury,
-        payer: context_payer.pubkey(),
+        payer: context.payer.pubkey(),
         system_program: system_program::ID,
         hashlist,
         hashlist_marker,
@@ -75,16 +73,16 @@ pub async fn join_to_fair_launch(
     }
     .to_account_metas(None);
 
-    banks_client
+    context.banks_client
         .process_transaction(Transaction::new_signed_with_payer(
             &[Instruction {
                 program_id: ::libreplex_mx::id(),
                 data: ::libreplex_mx::instruction::Join {}.data(),
                 accounts,
             }],
-            Some(&context_payer.pubkey()),
-            &[&context_payer],
-            recent_blockhash,
+            Some(&context.payer.pubkey()),
+            &[&context.payer],
+            context.last_blockhash,
         ))
         .await
         .err()

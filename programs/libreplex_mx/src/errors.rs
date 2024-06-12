@@ -10,5 +10,13 @@ pub enum LibreplexMxErrors {
     /// 6001 / 0x1771
     #[msg("Creator not verified")]
     CreatorNotVerified,
+
+    /// 6002 / 0x1772
+    #[msg("Collection not verified")]
+    MetadataCollectionNotVerified,
+
+    /// 6003 / 0x1773
+    #[msg("Collection not verified")]
+    MetadataHasInvalidCollection
     
 }

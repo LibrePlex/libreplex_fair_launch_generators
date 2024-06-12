@@ -78,15 +78,13 @@ pub fn join_handler<'info>(ctx: Context<'_, '_, '_, 'info, JoinCtx<'info>>) -> R
     if metaplex_joiner.filter_type == FILTER_TYPE_COLLECTION {
         if let Some(x) = metadata_obj.collection {
             if !x.key.eq(&metaplex_joiner.filter_value) {
-                panic!(
-                    "Metadata has invalid collection. Expected {}",
-                    metaplex_joiner.filter_value
-                );
+                return Err(LibreplexMxErrors::MetadataHasInvalidCollection.into());
+                // panic!(
+                //     "Metadata has invalid collection. Expected {}",
+                //     metaplex_joiner.filter_value
+                // );
             } else if !x.verified {
-                panic!(
-                    "Metadata collection {} not verified.",
-                    metaplex_joiner.filter_value
-                );
+                return Err(LibreplexMxErrors::MetadataCollectionNotVerified.into());
             } else {
                 msg!("Collection matches filter");
             };
