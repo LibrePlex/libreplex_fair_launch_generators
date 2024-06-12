@@ -5,7 +5,7 @@ use mpl_token_metadata::accounts::Metadata;
 
 use libreplex_fair_launch::{program::LibreplexFairLaunch, MintInput};
 
-use crate::{MetaplexJoiner, FILTER_TYPE_COLLECTION, FILTER_TYPE_CREATOR};
+use crate::{LibreplexMxErrors, MetaplexJoiner, FILTER_TYPE_COLLECTION, FILTER_TYPE_CREATOR};
 
 #[derive(Accounts)]
 pub struct JoinCtx<'info> {
@@ -103,14 +103,11 @@ pub fn join_handler<'info>(ctx: Context<'_, '_, '_, 'info, JoinCtx<'info>>) -> R
                 .find(|x| x.address.eq(&metaplex_joiner.filter_value));
             match creator_match {
                 None => {
-                    panic!(
-                        "No creator matching filter found. Expected {}",
-                        metaplex_joiner.filter_value
-                    );
+                    return Err(LibreplexMxErrors::NoCreatorMatchingFilter.into());
                 }
                 Some(x) => {
                     if !x.verified {
-                        panic!("Creator {} not verified.", metaplex_joiner.filter_value);
+                        return Err(LibreplexMxErrors::CreatorNotVerified.into());
                     } else {
                         msg!("Creator matches filter");
                     }

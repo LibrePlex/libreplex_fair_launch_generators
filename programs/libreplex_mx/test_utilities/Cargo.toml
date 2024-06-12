@@ -1,0 +1,21 @@
+[package]
+name = "utilities"
+version = "0.0.0"
+description = ""
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+solana-program = {version = "~1.18"}
+anchor-lang = {version = "~0.30", features = ["init-if-needed"]}
+anchor-spl = {version = "~0.30"}
+libreplex_mx = {version ="*", path="../../libreplex_mx"}
+libreplex_fair_launch = {version = "0.6.0", features = ["no-entrypoint","idl-build","cpi"]}
+libreplex_shared = {version= "0.4.0", features=["no-entrypoint"] }
+mpl-token-metadata = { version="~3" }
+spl-token-2022 = {version = "~3.0", features = ["no-entrypoint"]}
+solana-program-test = {version= "~1.18"}
+solana-sdk= "~1.18"
+spl-associated-token-account = "3.0.2"
+
+

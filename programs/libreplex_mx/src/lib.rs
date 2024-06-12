@@ -3,6 +3,9 @@ use anchor_lang::prelude::*;
 pub mod state;
 pub use state::*;
 
+pub mod errors;
+pub use errors::*;
+
 pub mod join;
 pub use join::*;
 
