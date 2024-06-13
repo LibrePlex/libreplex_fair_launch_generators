@@ -89,7 +89,7 @@ pub mod libreplex_liquidity {
         prepare_native_escrow_handler(ctx)
     }
 
-    pub fn mint_spl<'info>(ctx: Context<'_, '_, '_, 'info, MintSplCtx<'info>>) -> Result<()> {
+    pub fn mint_spl<'info>(ctx: Context<'_, '_, 'info, 'info, MintSplCtx<'info>>) -> Result<()> {
         mint_spl_handler(ctx)
     }
 

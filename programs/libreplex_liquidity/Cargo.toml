@@ -21,8 +21,8 @@ idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build", "libreplex_fair_la
 [dependencies]
 anchor-lang = {version = "~0.30", features = ["init-if-needed"]}
 anchor-spl = {version = "~0.30"}
-libreplex_fair_launch = {version="0.5.0", features =["cpi", "no-entrypoint", "idl-build"]}
-libreplex_shared = {version= "0.3.0", features=["no-entrypoint"] }
+libreplex_fair_launch = {path="../../../libreplex_fair_launch/programs/libreplex_fair_launch",version="*", features =["cpi", "no-entrypoint", "idl-build"]}
+libreplex_shared = {version= "*", path="../../../libreplex_shared/programs/libreplex_shared", features=["no-entrypoint"] }
 mpl-token-metadata = { version="~3" }
 libreplex_inscriptions = {version = "0.5.1", features=["cpi"]}
 amm-proxy = {path = "../../utils/mercurial-proxy", features = ["cpi"]}

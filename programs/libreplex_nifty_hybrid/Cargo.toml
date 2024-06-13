@@ -21,8 +21,8 @@ idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build","anchor-lang/idl-bu
 [dependencies]
 anchor-lang = {version = "~0.30", features = ["init-if-needed"]}
 anchor-spl = {version = "~0.30"}
-libreplex_fair_launch = {version="0.5.0", features =["cpi", "no-entrypoint"]}
-libreplex_shared = {version = "0.0.0", features=["cpi"]}
+libreplex_fair_launch = {path="../../../libreplex_fair_launch/programs/libreplex_fair_launch",version="*", features =["cpi", "no-entrypoint", "idl-build"]}
+libreplex_shared = {version= "*", path="../../../libreplex_shared/programs/libreplex_shared", features=["no-entrypoint"] }
 solana-program = "~1.18"
 solana-address-lookup-table-program = "^1.17"
 dyn-fmt = "0.3.0"
